@@ -61,6 +61,17 @@ return {
 		-- Load fzf extension
 		require('telescope').load_extension('fzf')
 
+		-- Disable treesitter-context for telescope to avoid errors
+		vim.api.nvim_create_autocmd('User', {
+			pattern = 'TelescopePreviewerLoaded',
+			callback = function()
+				local ok, _ = pcall(vim.cmd, 'TSContextDisable')
+				if not ok then
+					-- Silently ignore if TSContext is not available
+				end
+			end,
+		})
+
 		vim.keymap.set("n", "<leader>mlp", function()
 			require("telescope.builtin").find_files({
 				cwd = vim.fs.joinpath(vim.fn.stdpath("data"), "lazy"),
