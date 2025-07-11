@@ -91,10 +91,12 @@ return {
           cwd_prompt = false,
           cwd_prompt_shorten_len = 32,
           cwd_prompt_shorten_val = 1,
-          -- Windows-specific settings
-          find_opts = [[-type f -not -path '*/\.git/*' -printf '%P\n']],
-          rg_opts = "--column --line-number --no-heading --color=always --smart-case --max-columns=4096",
-          fd_opts = "--color=never --type f --hidden --follow --exclude .git",
+          -- Windows-specific settings - use simple fd command
+          cmd = "fd --type f --strip-cwd-prefix --hidden --follow --exclude .git",
+          -- Alternative commands for fallback
+          find_opts = [[-type f -not -path '*/\.git/*']],
+          rg_opts = "--files --hidden --follow --glob '!.git/*'",
+          fd_opts = "--color=never --type f --hidden --follow --exclude .git --strip-cwd-prefix",
         },
         grep = {
           prompt = "Rg❯ ",

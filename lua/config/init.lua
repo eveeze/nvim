@@ -1,5 +1,6 @@
 require("config.windows-fix")
 require("config.windows-fzf-fix")
+require("config.fzf-debug")
 require("config.general-keymaps")
 require("config.lazy")
 require("config.options")

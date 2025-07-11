@@ -43,19 +43,23 @@ if vim.fn.has('win32') == 1 then
   -- Set Windows-specific fzf-lua options
   vim.api.nvim_create_autocmd('VimEnter', {
     callback = function()
-      local fzf_lua = require('fzf-lua')
-      if fzf_lua then
+      -- Force reload fzf-lua with proper Windows settings
+      local ok, fzf_lua = pcall(require, 'fzf-lua')
+      if ok then
         fzf_lua.setup({
           files = {
-            cmd = 'fd --type f --strip-cwd-prefix --hidden --follow --exclude .git',
-            previewer = "bat",
+            -- Use multiple fallback commands
+            cmd = vim.fn.executable('fd') == 1 and 'fd --type f --strip-cwd-prefix --hidden --follow --exclude .git' or
+                  vim.fn.executable('rg') == 1 and 'rg --files --hidden --follow --glob "!.git/*"' or
+                  'find . -type f -not -path "*/\.git/*" 2>/dev/null',
+            previewer = vim.fn.executable('bat') == 1 and 'bat' or 'cat',
           },
           grep = {
-            cmd = 'rg --column --line-number --no-heading --color=always --smart-case',
-            previewer = "bat",
+            cmd = vim.fn.executable('rg') == 1 and 'rg --column --line-number --no-heading --color=always --smart-case' or 'grep -rn',
+            previewer = vim.fn.executable('bat') == 1 and 'bat' or 'cat',
           },
           preview = {
-            cmd = 'bat --style=numbers --color=always --line-range :500 {}',
+            cmd = vim.fn.executable('bat') == 1 and 'bat --style=numbers --color=always --line-range :500 {}' or 'cat {}',
             border = 'rounded',
             layout = 'flex',
             flip_columns = 120,
