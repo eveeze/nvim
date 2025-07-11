@@ -1,56 +1,28 @@
 -- Fix for treesitter-context window issues
 
--- Add autocmd to handle treesitter-context errors
-vim.api.nvim_create_autocmd({ 'WinEnter', 'BufEnter' }, {
-  callback = function()
-    -- Check if treesitter-context is available
-    local ok, ts_context = pcall(require, 'treesitter-context')
-    if not ok then
-      return
-    end
-    
-    -- Disable treesitter-context for specific buffer types
-    local buftype = vim.api.nvim_buf_get_option(0, 'buftype')
-    local filetype = vim.api.nvim_buf_get_option(0, 'filetype')
-    
-    -- List of buffer types and file types to disable treesitter-context
-    local disabled_buftypes = { 'terminal', 'quickfix', 'help', 'nofile' }
-    local disabled_filetypes = { 'alpha', 'dashboard', 'NvimTree', 'Trouble', 'telescope', 'lazy' }
-    
-    for _, bt in ipairs(disabled_buftypes) do
-      if buftype == bt then
-        vim.cmd('TSContextDisable')
-        return
-      end
-    end
-    
-    for _, ft in ipairs(disabled_filetypes) do
-      if filetype == ft then
-        vim.cmd('TSContextDisable')
-        return
-      end
-    end
-    
-    -- Re-enable for normal buffers
-    if buftype == '' and filetype ~= '' then
-      vim.cmd('TSContextEnable')
-    end
-  end,
-})
-
--- Handle telescope specifically
+-- Simplified approach: just handle telescope and major problematic filetypes
 vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'TelescopePrompt',
+  pattern = { 'TelescopePrompt', 'alpha', 'dashboard', 'NvimTree', 'Trouble', 'lazy' },
   callback = function()
-    vim.cmd('TSContextDisable')
+    -- Check if TSContext commands are available
+    if vim.fn.exists(':TSContextDisable') == 2 then
+      pcall(vim.cmd, 'TSContextDisable')
+    end
   end,
 })
 
--- Add error handling for treesitter-context
-vim.api.nvim_create_autocmd('User', {
-  pattern = 'TelescopePreviewerLoaded',
+-- Handle buffer types that are problematic
+vim.api.nvim_create_autocmd('BufEnter', {
   callback = function()
-    vim.cmd('TSContextDisable')
+    local success, buftype = pcall(vim.api.nvim_buf_get_option, 0, 'buftype')
+    if success and buftype ~= '' then
+      -- Disable for special buffer types
+      if vim.tbl_contains({ 'terminal', 'quickfix', 'help', 'nofile' }, buftype) then
+        if vim.fn.exists(':TSContextDisable') == 2 then
+          pcall(vim.cmd, 'TSContextDisable')
+        end
+      end
+    end
   end,
 })
 
