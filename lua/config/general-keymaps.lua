@@ -3,6 +3,16 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
+-- ===================================================================
+-- ESCAPE ALTERNATIVES - jj and jk to exit insert mode
+-- ===================================================================
+vim.keymap.set("i", "jj", "<Esc>", { desc = "Exit insert mode with jj" })
+vim.keymap.set("i", "jk", "<Esc>", { desc = "Exit insert mode with jk" })
+
+-- For terminal mode as well
+vim.keymap.set("t", "jj", [[<C-\><C-n>]], { desc = "Exit terminal mode with jj" })
+vim.keymap.set("t", "jk", [[<C-\><C-n>]], { desc = "Exit terminal mode with jk" })
+
 
 vim.keymap.set("n", "<leader>s", function() vim.cmd('w') end) -- just for some convenion
 

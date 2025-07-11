@@ -5,7 +5,7 @@ return {
     -- Language Parser
     "nvim-treesitter/nvim-treesitter",
     opts = function()
-      vim.list_extend(setup_sources.language_parsers, { "typescript" })
+      vim.list_extend(setup_sources.language_parsers, { "typescript", "javascript", "json", "yaml" })
     end,
   },
   {
@@ -17,17 +17,43 @@ return {
       -- setup client
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
       local lspconfig = require("lspconfig")
-      lspconfig.vtsls.setup({ capabilities = capabilities })
+      lspconfig.vtsls.setup({ 
+        capabilities = capabilities,
+        settings = {
+          typescript = {
+            inlayHints = {
+              includeInlayParameterNameHints = "all",
+              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayVariableTypeHints = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayEnumMemberValueHints = true,
+            },
+          },
+          javascript = {
+            inlayHints = {
+              includeInlayParameterNameHints = "all",
+              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+              includeInlayFunctionParameterTypeHints = true,
+              includeInlayVariableTypeHints = true,
+              includeInlayPropertyDeclarationTypeHints = true,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayEnumMemberValueHints = true,
+            },
+          },
+        },
+      })
     end,
   },
   {
-    -- LS from tool
+    -- Formatter
     "nvimtools/none-ls.nvim",
     opts = function()
-      vim.list_extend(setup_sources.mason_general_packages, { "prettier" }) -- install through mason general packages
-
+      vim.list_extend(setup_sources.mason_general_packages, { "prettier" })
+      
       vim.list_extend(setup_sources.null_ls_packages_setup, {
-        require("null-ls").builtins.formatting.prettier
+        require("null-ls").builtins.formatting.prettier,
       })
     end
   }
