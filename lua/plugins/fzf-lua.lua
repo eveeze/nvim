@@ -4,8 +4,8 @@ return {
     -- optional for icon support
     dependencies = { "nvim-tree/nvim-web-devicons" },
     keys = {
-      -- File operations
-      { "<leader>ff", "<cmd>FzfLua files<cr>", desc = "Find files" },
+      -- File operations - ff disabled, using Telescope instead
+      -- { "<leader>ff", "<cmd>FzfLua files<cr>", desc = "Find files" },
       { "<leader>fg", "<cmd>FzfLua live_grep_native<cr>", desc = "Live grep" },
       { "<leader>fb", "<cmd>FzfLua buffers<cr>", desc = "Find buffers" },
       { "<leader>fh", "<cmd>FzfLua help_tags<cr>", desc = "Help tags" },
