@@ -40,34 +40,64 @@ if vim.fn.has('win32') == 1 then
   ensure_tool('bat', 'sharkdp.bat_Microsoft.Winget.Source_8wekyb3d8bbwe/bat-v0.25.0-x86_64-pc-windows-msvc')
   ensure_tool('fd', 'sharkdp.fd_Microsoft.Winget.Source_8wekyb3d8bbwe/fd-v10.2.0-x86_64-pc-windows-msvc')
   
-  -- Set Windows-specific fzf-lua options
+  -- Fix files command with Windows-compatible approach
   vim.api.nvim_create_autocmd('VimEnter', {
     callback = function()
-      -- Force reload fzf-lua with proper Windows settings
-      local ok, fzf_lua = pcall(require, 'fzf-lua')
-      if ok then
-        fzf_lua.setup({
-          files = {
-            -- Use multiple fallback commands
-            cmd = vim.fn.executable('fd') == 1 and 'fd --type f --strip-cwd-prefix --hidden --follow --exclude .git' or
-                  vim.fn.executable('rg') == 1 and 'rg --files --hidden --follow --glob "!.git/*"' or
-                  'find . -type f -not -path "*/\.git/*" 2>/dev/null',
-            previewer = vim.fn.executable('bat') == 1 and 'bat' or 'cat',
-          },
-          grep = {
-            cmd = vim.fn.executable('rg') == 1 and 'rg --column --line-number --no-heading --color=always --smart-case' or 'grep -rn',
-            previewer = vim.fn.executable('bat') == 1 and 'bat' or 'cat',
-          },
-          preview = {
-            cmd = vim.fn.executable('bat') == 1 and 'bat --style=numbers --color=always --line-range :500 {}' or 'cat {}',
-            border = 'rounded',
-            layout = 'flex',
-            flip_columns = 120,
-            horizontal = 'right:50%',
-            vertical = 'down:45%',
-          },
-        })
-      end
+      vim.defer_fn(function()
+        local ok, fzf_lua = pcall(require, 'fzf-lua')
+        if ok then
+          -- Create a reliable files command
+          local function get_files_cmd()
+            -- Test fd first
+            if vim.fn.executable('fd') == 1 then
+              local test = vim.fn.system('fd --type f --strip-cwd-prefix --hidden --follow --exclude .git . 2>NUL')
+              if test and test:len() > 0 and not test:match('error') then
+                return 'fd --type f --strip-cwd-prefix --hidden --follow --exclude .git'
+              end
+            end
+            
+            -- Test rg files
+            if vim.fn.executable('rg') == 1 then
+              local test = vim.fn.system('rg --files --hidden --follow --glob "!.git/*" . 2>NUL')
+              if test and test:len() > 0 and not test:match('error') then
+                return 'rg --files --hidden --follow --glob "!.git/*"'
+              end
+            end
+            
+            -- Fallback to PowerShell
+            return 'powershell.exe -Command "Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notlike \'*\\.git\\*\' } | Select-Object -ExpandProperty Name"'
+          end
+          
+          local files_cmd = get_files_cmd()
+          print('Using files command: ' .. files_cmd)
+          
+          -- Setup with working command
+          fzf_lua.setup({
+            files = {
+              cmd = files_cmd,
+              prompt = 'Files❯ ',
+              multiprocess = true,
+              git_icons = true,
+              file_icons = true,
+              color_icons = true,
+              cwd_prompt = false,
+              previewer = vim.fn.executable('bat') == 1 and 'bat' or false,
+            },
+            grep = {
+              cmd = vim.fn.executable('rg') == 1 and 'rg --column --line-number --no-heading --color=always --smart-case' or 'findstr /s /n /r',
+              previewer = vim.fn.executable('bat') == 1 and 'bat' or false,
+            },
+            preview = {
+              cmd = vim.fn.executable('bat') == 1 and 'bat --style=numbers --color=always --line-range :500 {}' or 'type {}',
+              border = 'rounded',
+              layout = 'flex',
+              flip_columns = 120,
+              horizontal = 'right:50%',
+              vertical = 'down:45%',
+            },
+          })
+        end
+      end, 1000)
     end,
   })
 end
