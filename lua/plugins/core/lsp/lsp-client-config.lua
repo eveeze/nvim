@@ -132,7 +132,7 @@ return {
   config = function()
     -- Get capabilities for LSP
     local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
+    
     -- Format on save function
     local format_on_save = function(client, bufnr)
       if client.supports_method("textDocument/formatting") then
@@ -149,7 +149,7 @@ return {
         })
       end
     end
-
+    
     -- LSP Attach event
     vim.api.nvim_create_autocmd('LspAttach', {
       callback = function(args)
@@ -157,7 +157,7 @@ return {
         local bufnr = args.buf
         if not client then return end
         format_on_save(client, bufnr)
-
+        
         -- Add keymaps here
         local opts = { noremap = true, silent = true, buffer = bufnr }
         vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
@@ -167,10 +167,10 @@ return {
         vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, opts)
       end,
     })
-
+    
     -- Manual LSP setup for specific servers
     local lspconfig = require("lspconfig")
-
+    
     -- Setup lua_ls manually with specific config
     lspconfig.lua_ls.setup({
       capabilities = capabilities,
@@ -189,7 +189,7 @@ return {
         }
       }
     })
-
+    
     -- Setup rust_analyzer if available
     lspconfig.rust_analyzer.setup({
       capabilities = capabilities,
