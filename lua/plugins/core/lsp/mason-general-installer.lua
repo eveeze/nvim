@@ -1,3 +1,4 @@
+-- lua/plugins/core/lsp/mason-general-installer.lua
 return {
   "WhoIsSethDaniel/mason-tool-installer.nvim",
   opts = function()

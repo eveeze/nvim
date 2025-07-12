@@ -1,3 +1,4 @@
+-- lua/plugins/core/lsp/init.lua
 return {
 	require("plugins.core.lsp.mason"),
 	require("plugins.core.lsp.mason-lsp-connector"),
