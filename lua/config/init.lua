@@ -1,3 +1,4 @@
+-- lua/config/init.lua
 require("config.windows-fix")
 require("config.windows-fzf-fix")
 require("config.fzf-debug")

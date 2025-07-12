@@ -1,35 +1,46 @@
--- mason-lspconfig bridges mason.nvim with the lspconfig plugin - making it easier to use both plugins together.
+-- maosn-lsp-connector
+-- return {
+--   "williamboman/mason-lspconfig.nvim",
+--   opts = function()
+--     require("mason-lspconfig").setup({
+--       ensure_installed = require("plugins.core.setup-sources").mason_lsps,
+--     })
+--   end,
+-- }
+--
 -- lua/plugins/core/lsp/mason-lsp-connector.lua
 return {
   "williamboman/mason-lspconfig.nvim",
   dependencies = {
     "williamboman/mason.nvim",
-    "neovim/nvim-lspconfig",
+    "neovim/nvim-lspconfig"
   },
   config = function()
-    local ok, mason_lspconfig = pcall(require, "mason-lspconfig")
-    if not ok then
-      vim.notify("mason-lspconfig not found", vim.log.levels.WARN)
-      return
-    end
-
-    mason_lspconfig.setup({
+    require("mason-lspconfig").setup({
       ensure_installed = require("plugins.core.setup-sources").mason_lsps,
       automatic_installation = true,
-    })
-
-    -- Setup handlers for automatic configuration
-    mason_lspconfig.setup_handlers({
-      -- Default handler for all servers
-      function(server_name)
-        local ok_lsp, lspconfig = pcall(require, "lspconfig")
-        if not ok_lsp then
-          return
-        end
-
-        -- Basic setup for all servers
-        lspconfig[server_name].setup({})
-      end,
+      -- This will automatically setup LSP servers installed by mason
+      handlers = {
+        -- Default handler (optional, will be called for each server without a custom handler)
+        function(server_name)
+          require("lspconfig")[server_name].setup({
+            capabilities = require("cmp_nvim_lsp").default_capabilities()
+          })
+        end,
+        -- Custom handlers for specific servers
+        ["lua_ls"] = function()
+          require("lspconfig").lua_ls.setup({
+            capabilities = require("cmp_nvim_lsp").default_capabilities(),
+            settings = {
+              Lua = {
+                diagnostics = {
+                  globals = { "vim" }
+                }
+              }
+            }
+          })
+        end,
+      }
     })
   end,
 }
